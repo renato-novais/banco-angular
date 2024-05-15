@@ -1,0 +1,49 @@
+<div class="card">
+  <p-toast></p-toast>
+  <p-toolbar styleClass="mb-4">
+    <ng-template pTemplate="left" >
+      <div class="p-grid flex mt-3">
+        <div class="flex p-col-6 p-md-4 ">
+          <span class="p-float-label">
+            <p-calendar [(ngModel)]="selectedDate" dateFormat="dd/mm/yy" [showIcon]="true" ></p-calendar>
+            <label>Data da Transação</label>
+          </span>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="right">
+      <div class="p-grid flex mt-3">
+        <div class="p-col">
+          <button pButton type="button" label="Exportar para Excel" icon="pi pi-file-excel" (click)="exportToExcel()" class="p-button-success" [disabled]="transferList.length === 0"></button>
+        </div>
+        <div class="flex p-col-6 p-md-4 ml-5">
+          <button pButton type="button" label="Pesquisar" icon="pi pi-search" (click)="searchTransfers()"></button>
+        </div>
+      </div>
+    </ng-template>
+  </p-toolbar>
+
+  <div class="p-grid">
+    <div class="p-col">
+      <p-table [value]="transferList" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,20]"
+               currentPageReportTemplate="Mostrando {first} a {last} de um total de {totalRecords} registros"
+               [scrollable]="true" scrollHeight="400px">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Número da Conta Origem</th>
+            <th>Número da Conta Destino</th>
+            <th>Valor</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-transfer>
+          <tr>
+            <td>{{ transfer.contaOrigem.numeroConta }}</td>
+            <td>{{ transfer.contaDestino.numeroConta }}</td>
+            <td>{{ transfer.valor }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>

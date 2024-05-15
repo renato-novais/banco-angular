@@ -1,0 +1,153 @@
+<div class="card">
+  <p-toast></p-toast>
+  <p-toolbar styleClass="mb-4 gap-2">
+    <ng-template pTemplate="left">
+      <button pButton pRipple label="Novo Cliente" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNewClientDialog()"></button>
+      <div tooltipPosition="left" [pTooltip]="'Selecione dois clientes.'">
+        <button pButton pRipple label="Nova Transação" icon="pi pi-arrow-right-arrow-left" class="p-button-info" (click)="openTransferClientDialog()" [disabled]="selectedClients.length !== 2"
+        ></button>
+      </div>
+
+    </ng-template>
+  </p-toolbar>
+
+  <p-table
+    [value]="clientList"
+    [rows]="10"
+    [paginator]="true"
+    [globalFilterFields]="['nome', 'idade', 'email', 'conta.numeroConta', 'conta.saldo']"
+    [tableStyle]="{ 'min-width': '75rem' }"
+    selectionMode="multiple"
+    [(selection)]="selectedClients"
+    [rowHover]="true"
+    dataKey="id"
+    currentPageReportTemplate="Mostrando {first} a {last} linhas de um total de {totalRecords} linhas."
+    [showCurrentPageReport]="true"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="nome" style="min-width:15rem">Nome<p-sortIcon field="nome"></p-sortIcon></th>
+        <th pSortableColumn="idade">Idade<p-sortIcon field="idade"></p-sortIcon></th>
+        <th pSortableColumn="email" style="min-width:15rem">E-mail<p-sortIcon field="email"></p-sortIcon></th>
+        <th pSortableColumn="conta.numeroConta">Número da Conta<p-sortIcon field="conta.numeroConta"></p-sortIcon></th>
+        <th pSortableColumn="conta.saldo">Saldo<p-sortIcon field="conta.saldo"></p-sortIcon></th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-client>
+      <tr [pSelectableRow]="client">
+        <td>{{ client.nome }}</td>
+        <td>{{ client.idade }}</td>
+        <td>{{ client.email }}</td>
+        <td>{{ client.conta.numeroConta }}</td>
+        <td>{{ client.conta.saldo }}</td>
+        <td>
+          <button pButton pRipple tooltipPosition="bottom" [pTooltip]="'Visualizar Extrato'" icon="pi pi-eye" class="p-button-rounded p-button-info mr-2" (click)="openExtratoDialog(client.conta.id)"></button>
+          <button pButton pRipple tooltipPosition="bottom" [pTooltip]="'Editar'" icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" (click)="editClient(client.id)"></button>
+          <button pButton pRipple tooltipPosition="bottom" [pTooltip]="'Excluir'" icon="pi pi-trash" class="p-button-rounded p-button-danger mr-2" (click)="deleteClient(client)"></button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="clientDialog" [style]="{ width: '1150px' }" header="Cadastro de Cliente" [modal]="true" styleClass="p-grid p-fluid">
+  <ng-template pTemplate="content">
+    <div class="p-fluid grid p-4 mt-2 pb-0 search-form">
+
+      <div class="p-col-12 mb-3 mr-3">
+        <span class="p-float-label">
+          <input pInputText id="nome" [(ngModel)]="newClient.nome" />
+          <label htmlFor="nome">Nome</label>
+        </span>
+      </div>
+
+      <div class="p-col-12 mb-3 mr-3">
+        <span class="p-float-label">
+          <p-inputNumber inputId="minmax" [min]="0" [max]="199" [(ngModel)]="newClient.idade"></p-inputNumber>
+          <label htmlFor="idade">Idade</label>
+        </span>
+      </div>
+
+      <div class="p-col-12 mb-3 mr-3">
+        <span class="p-float-label">
+          <input pInputText id="email" [(ngModel)]="newClient.email" maxlength="100"/>
+          <label htmlFor="email">E-mail</label>
+        </span>
+      </div>
+
+      <div class="p-col-12 mb-3 mr-3">
+        <span class="p-float-label">
+          <input pInputText id="numeroConta" [(ngModel)]="newClient.numeroConta" maxlength="7"/>
+          <label htmlFor="numeroConta">Número da Conta</label>
+        </span>
+      </div>
+
+      <div class="p-col-12 mb-3 mr-3">
+        <span class="p-float-label">
+          <p-inputNumber inputId="saldo" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [(ngModel)]="newClient.saldo"></p-inputNumber>
+          <label htmlFor="saldo">Saldo</label>
+        </span>
+      </div>
+    </div>
+
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text-success" (click)="hideClientDialog()"></button>
+    <button pButton pRipple label="Salvar" icon="pi pi-check" class="p-button-text-success" (click)="saveClient()"></button>
+  </ng-template>
+</p-dialog>
+
+
+<p-dialog [(visible)]="transferClientDialog" [style]="{ width: '500px' }" header="Transação entre Clientes" [modal]="true" styleClass="p-grid p-fluid">
+  <ng-template pTemplate="content">
+    <div class="p-fluid grid p-4 mt-2 pb-0 search-form">
+      <div class="p-col-12 mb-3 mr-3">
+        <label>Número da Conta Origem: {{ selectedClientsCopy[0]?.conta?.numeroConta }}</label>
+      </div>
+      <div class="p-col-12 mb-3 mr-3">
+        <label>Número da Conta Destino: {{ selectedClientsCopy[1]?.conta?.numeroConta }}</label>
+      </div>
+      <div class="p-col-12 mb-3 mr-3">
+        <span class="p-float-label">
+          <p-inputNumber inputId="valorTransferencia" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [(ngModel)]="valorTransferencia"></p-inputNumber>
+          <label htmlFor="valorTransferencia">Valor</label>
+
+        </span>
+      </div>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text-success" (click)="cancelTransfer()"></button>
+    <button pButton pRipple label="Transferir" icon="pi pi-check" class="p-button-text-success" (click)="saveTransfer()" [disabled]="!isTransferValid()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="extratoDialog" [style]="{ width: '800px' }" header="Extrato da Conta" [modal]="true" styleClass="p-grid p-fluid">
+  <ng-template pTemplate="content">
+    <p-table [value]="extrato" [scrollable]="true" scrollHeight="400px">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Data</th>
+          <th>Conta Origem</th>
+          <th>Conta Destino</th>
+          <th>Valor</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-transacao>
+        <tr>
+          <td>{{ formatarData(transacao.data) }}</td>
+          <td>{{ transacao.contaOrigem.numeroConta }}</td>
+          <td>{{ transacao.contaDestino.numeroConta }}</td>
+          <td>{{ transacao.valor }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </ng-template>
+  <ng-template pTemplate="footer">
+    <button pButton pRipple label="Fechar" icon="pi pi-times" class="p-button-text-success" (click)="closeExtratoDialog()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
